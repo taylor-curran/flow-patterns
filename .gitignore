@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+**.prefectignore
+**deployment.yaml
+**demo_flow-deployment.yaml
