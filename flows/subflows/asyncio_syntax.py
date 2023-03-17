@@ -42,7 +42,7 @@ default_simulated_failure = SimulatedFailure(
     downstream_task_j=False
     )
 
-# prefect deployment build asyncio_syntax.py:asyncio_syntax -n dep_asyncio -t sub-flows -t asyncio_syntax -a
+# prefect deployment build asyncio_syntax.py:asyncio_syntax -n dep_asyncio -t sub-flows -t asyncio_syntax -t parent -a
 @flow(persist_result=True)
 async def asyncio_syntax(sim_failure: SimulatedFailure = default_simulated_failure):
     h = await upstream_task_h()

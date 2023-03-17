@@ -71,7 +71,7 @@ default_simulated_failure = SimulatedFailure(
     downstream_task_j=False
     )
 
-# prefect deployment build blocking_subflows.py:blocking_subflows -n dep_blocking -t subflows -t blocking -a
+# prefect deployment build blocking_subflows.py:blocking_subflows -n dep_blocking -t subflows -t blocking -t parent -a
 @flow(task_runner=ConcurrentTaskRunner(), persist_result=True)
 def blocking_subflows(sim_failure: SimulatedFailure = default_simulated_failure):
     h = upstream_task_h.submit()
