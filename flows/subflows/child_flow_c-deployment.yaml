@@ -1,0 +1,41 @@
+###
+### A complete description of a Prefect Deployment for flow 'child-flow-c'
+###
+name: child-deployment-c
+description: null
+version: 4a0eb6819995080234129a8f1cdbab76
+# The work queue that will handle this deployment's runs
+work_queue_name: default
+tags:
+- sub-flow
+parameters: {}
+schedule: null
+infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: child-flow-c
+manifest_path: null
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  _block_document_id: 63a7e781-e1ae-461a-a68e-c18c51cf5b10
+  _block_document_name: anonymous-f1333901-dc65-40bd-ad13-0a1e68078658
+  _is_anonymous: true
+  block_type_slug: process
+  _block_type_slug: process
+storage: null
+path: /Users/taylorcurran/work/flow-patterns/flows/subflows
+entrypoint: child_deployments.py:child_flow_c
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties: {}
+  required: null
+  definitions: null
