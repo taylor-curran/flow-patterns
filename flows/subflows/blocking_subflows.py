@@ -1,34 +1,8 @@
 from prefect import flow, task
 from prefect.deployments import run_deployment
 from prefect.task_runners import ConcurrentTaskRunner
+from child_deployments import child_flow_a, child_flow_b, child_flow_c
 from pydantic import BaseModel
-
-
-@flow(persist_result=True)
-def child_flow_a(i, sim_failure_child_flow_a):
-    print(f'i: {i}')
-    if sim_failure_child_flow_a:
-        raise Exception("This is a test exception")
-    else:
-        return {'a': 'child flow a'}
-
-@flow(persist_result=True)
-def child_flow_b(i={'i': 'upstream task'}, sim_failure_child_flow_b=False):
-    print(f'i: {i}')
-    if sim_failure_child_flow_b:
-        raise Exception("This is a test exception")
-    else:
-        return {'b': 'child flow b'}
-
-@flow(persist_result=True)
-def child_flow_c():
-    return {'c': 'child flow c'}
-
-@flow(persist_result=True)
-def child_flow_d():
-    return {'d': 'child flow d'}
-
-# ---
 
 @task()
 def upstream_task_h():
@@ -81,6 +55,8 @@ def blocking_subflows(sim_failure: SimulatedFailure = default_simulated_failure)
     c = child_flow_c()
     j = downstream_task_j.submit(a, c, sim_failure.downstream_task_j)
     k = downstream_task_k.submit(wait_for=[b])
+
+    return {'j': j, 'k': k}
 
 # ---
 

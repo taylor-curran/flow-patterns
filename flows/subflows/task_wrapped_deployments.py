@@ -5,7 +5,6 @@ from prefect.deployments import run_deployment
 from prefect.task_runners import ConcurrentTaskRunner
 from pydantic import BaseModel
 
-
 @task()
 def upstream_task_h():
     print('upstream task')
@@ -86,6 +85,8 @@ def task_wrapped_deployments(sim_failure: SimulatedFailure = default_simulated_f
     c = wrapper_task_c.submit()
     j = downstream_task_j.submit(a, c, sim_failure.downstream_task_j)
     k = downstream_task_k.submit(wait_for=[b])
+
+    return {'j': j, 'k': k}
 
 # ---
 

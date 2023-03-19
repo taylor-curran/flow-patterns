@@ -1,4 +1,5 @@
 from prefect import flow
+from prefect.deployments import run_deployment
 
 # TODO: Set persistence of the child flows to True
 
@@ -20,12 +21,15 @@ def child_flow_b(i={'i': 'upstream task'}, sim_failure_child_flow_b=False):
     else:
         return {'b': 'child flow b'}
 
-# prefect deployment build child_deployments.py:child_flow_c -n dep-child-c -t sub-flows -t child -a
-@flow(persist_result=True)
-def child_flow_c():
-    return {'c': 'child flow c'}
-
 # prefect deployment build child_deployments.py:child_flow_d -n dep-child-d -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_d():
     return {'d': 'child flow d'}
+
+# prefect deployment build child_deployments.py:child_flow_c -n dep-child-c -t sub-flows -t child -a
+@flow(persist_result=True)
+def child_flow_c():
+    d = run_deployment(
+        "child-flow-d/dep-child-d"
+        )
+    return {'d': d.state.result()}

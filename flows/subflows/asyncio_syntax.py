@@ -72,6 +72,8 @@ async def asyncio_syntax(sim_failure: SimulatedFailure = default_simulated_failu
     j = await downstream_task_j(a, c, sim_failure.downstream_task_j)
     k = await downstream_task_k(b)
 
+    return {'j': j, 'k': k}
+
 # ---
 
 if __name__ == "__main__":
