@@ -26,10 +26,11 @@ def child_flow_b(i={'i': 'upstream task'}, sim_failure_child_flow_b=False):
 def child_flow_d():
     return {'d': 'child flow d'}
 
+# -- Extra Child Flow --
 # prefect deployment build child_deployments.py:child_flow_c -n dep-child-c -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_c():
     d = run_deployment(
         "child-flow-d/dep-child-d"
         )
-    return {'d': d.state.result()}
+    return {'c': d.state.result()}

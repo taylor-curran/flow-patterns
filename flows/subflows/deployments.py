@@ -1,6 +1,6 @@
 from prefect.deployments import Deployment
 from child_deployments import child_flow_a, child_flow_b, child_flow_c, child_flow_d
-from asyncio_syntax import asyncio_syntax
+from async_python import async_python
 from task_wrapped_deployments import task_wrapped_deployments
 from blocking_subflows import blocking_subflows
 
@@ -36,9 +36,9 @@ dep_task_wrapped_deployments = Deployment.build_from_flow(
 )
 
 dep_asyncio = Deployment.build_from_flow(
-    flow=asyncio_syntax,
-    name="dep-asyncio",
-    tags=["subflows", "asyncio", "parent"]
+    flow=async_python,
+    name="dep-async-py",
+    tags=["subflows", "async-py", "parent"]
 )
 
 if __name__ == "__main__":
