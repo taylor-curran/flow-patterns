@@ -34,6 +34,9 @@ async def child_flow_c():
     return {"c": d}
 
 
+# --
+
+
 @task()
 async def upstream_task_h():
     print("upstream task")
@@ -75,10 +78,11 @@ default_simulated_failure = SimulatedFailure(
 )
 
 
-# prefect deployment build async_python.py:async_python -n dep-async-py -t sub-flows -t async-py -t parent -a
+# prefect deployment build async_python_sub_flows.py:async_python_sub_flows -n dep-async-py-sub-flow -t sub-flows -t async-py-sub-flow -t parent -a
 @flow(persist_result=True)
-async def async_python(sim_failure: SimulatedFailure = default_simulated_failure):
-
+async def async_python_sub_flows(
+    sim_failure: SimulatedFailure = default_simulated_failure,
+):
     first_round = await asyncio.gather(
         *[upstream_task_h(), upstream_task_i(), child_flow_c()]
     )
@@ -106,7 +110,7 @@ async def async_python(sim_failure: SimulatedFailure = default_simulated_failure
 
 if __name__ == "__main__":
     asyncio.run(
-        async_python(
+        async_python_sub_flows(
             sim_failure=SimulatedFailure(
                 child_flow_a=False, child_flow_b=False, downstream_task_j=False
             )
