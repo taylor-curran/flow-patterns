@@ -52,3 +52,4 @@ if __name__ == "__main__":
     dep_task_wrapped_deployments.apply()
     dep_async_py_sub_dep.apply()
     dep_async_py_sub_flow.apply()
+    dep_blocking_subflows.apply()
