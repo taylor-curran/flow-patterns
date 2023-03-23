@@ -3,6 +3,26 @@ from prefect.deployments import run_deployment
 from pydantic import BaseModel
 import asyncio
 
+@task
+async def task_f():
+    print("task f")
+    return {"f": "task f"}
+
+@task
+async def task_m():
+    print("task m")
+    return {"m": "task m"}
+
+@task
+async def task_n(m):
+    print(m)
+    print("task n")
+    return {"n": "task n"}
+
+@task
+async def task_o():
+    print("task o")
+    return {"o": "task o"}
 
 @flow(persist_result=True)
 async def child_flow_a(i, sim_failure_child_flow_a):
@@ -24,6 +44,7 @@ async def child_flow_b(i={"i": "upstream task"}, sim_failure_child_flow_b=False)
 
 @flow(persist_result=True)
 async def child_flow_d():
+    o = task_o()
     return {"d": "child flow d"}
 
 
@@ -31,7 +52,9 @@ async def child_flow_d():
 @flow(persist_result=True)
 async def child_flow_c():
     d = await child_flow_d()
-    return {"c": d}
+    m = await task_m()
+    n = await task_n(m)
+    return {"c": d, "n": n}
 
 
 # --
