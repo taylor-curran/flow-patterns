@@ -54,7 +54,7 @@ async def async_python_sub_deployments(
         *[
             upstream_task_h(),
             upstream_task_i(),
-            run_deployment(name="child-flow-c/child-deployment-c"),
+            run_deployment(name="child-flow-c/dep-child-c"),
         ]
     )
     h, i, flow_run_c = first_round
@@ -63,14 +63,14 @@ async def async_python_sub_deployments(
     second_round = await asyncio.gather(
         *[
             run_deployment(
-                "child-flow-a/child-deployment-a",
+                "child-flow-a/dep-child-a",
                 parameters={
                     "i": i,
                     "sim_failure_child_flow_a": sim_failure.child_flow_a,
                 },
             ),
             run_deployment(
-                name="child-flow-b/child-deployment-b",
+                name="child-flow-b/dep-child-b",
                 parameters={
                     "i": i,
                     "sim_failure_child_flow_b": sim_failure.child_flow_b,
