@@ -15,6 +15,7 @@ def upstream_task_i():
     print("upstream task")
     return {"i": "upstream task"}
 
+
 @task()
 def wrapper_task_a(i, sim_failure_child_flow_a):
     print("wrapper task")
@@ -61,7 +62,7 @@ async def downstream_task_j(a, c, sim_failure_downstream_task_j):
 
 
 @task()
-def downstream_task_k(b='b'):
+def downstream_task_k(b="b"):
     print(b)
     print("downstream task")
     return {"k": "downstream task"}
