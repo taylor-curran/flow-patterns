@@ -17,12 +17,11 @@ def upstream_task_i():
     print("upstream task")
     return {"i": "upstream task"}
 
-
 @task()
 def wrapper_task_a(i, sim_failure_child_flow_a):
     print("wrapper task")
     a = run_deployment(
-        "child-flow-a/child-deployment-a",
+        "child-flow-a/dep-child-a",
         parameters={"i": i, "sim_failure_child_flow_a": sim_failure_child_flow_a},
     )
     return {"a": a.state.result()}
@@ -32,7 +31,7 @@ def wrapper_task_a(i, sim_failure_child_flow_a):
 def wrapper_task_b(sim_failure_child_flow_b):
     print("wrapper task")
     b = run_deployment(
-        name="child-flow-b/child-deployment-b",
+        name="child-flow-b/dep-child-b",
         parameters={"sim_failure_child_flow_b": sim_failure_child_flow_b},
     )
     # WARNING: We do not evaluate the result or state in this
@@ -44,7 +43,7 @@ def wrapper_task_b(sim_failure_child_flow_b):
 @task()
 def wrapper_task_c():
     print("wrapper task")
-    c = run_deployment("child-flow-c/child-deployment-c")
+    c = run_deployment("child-flow-c/dep-child-c")
     return {"c": c.state.result()}
 
 
