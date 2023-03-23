@@ -4,6 +4,7 @@ from async_python_sub_deployments import async_python_sub_deployments
 from async_python_sub_flows import async_python_sub_flows
 from task_wrapped_deployments import task_wrapped_deployments
 from blocking_subflows import blocking_subflows
+from just_tasks import just_tasks
 
 
 dep_child_a = Deployment.build_from_flow(
@@ -44,6 +45,10 @@ dep_blocking_subflows = Deployment.build_from_flow(
     flow=blocking_subflows, name="dep-blocking", tags=["subflows", "blocking", "parent"]
 )
 
+dep_just_tasks = Deployment.build_from_flow(
+    flow=just_tasks, name="dep-just-tasks", tags=["subflows", "just-tasks", "parent"]
+)
+
 if __name__ == "__main__":
     dep_child_a.apply()
     dep_child_b.apply()
@@ -53,3 +58,4 @@ if __name__ == "__main__":
     dep_async_py_sub_dep.apply()
     dep_async_py_sub_flow.apply()
     dep_blocking_subflows.apply()
+    dep_just_tasks.apply()

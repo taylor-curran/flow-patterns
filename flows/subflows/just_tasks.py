@@ -43,7 +43,59 @@ def downstream_task_k():
     return {"k": "downstream task"}
 
 
-# ---
+@task
+def task_f():
+    print("task f")
+    return {"f": "task f"}
+
+
+@task
+def task_m():
+    print("task m")
+    return {"m": "task m"}
+
+
+@task
+def task_n(m):
+    print(m)
+    print("task n")
+    return {"n": "task n"}
+
+
+@task
+def task_o():
+    print("task o")
+    return {"o": "task o"}
+
+
+# --
+@task
+def child_flow_a(i, sim_failure_child_flow_a):
+    print(f"i: {i}")
+    if sim_failure_child_flow_a:
+        raise Exception("This is a test exception")
+    else:
+        return {"a": "child flow a"}
+
+
+@task
+def child_flow_b(i={"i": "upstream task"}, sim_failure_child_flow_b=False):
+    print(f"i: {i}")
+    if sim_failure_child_flow_b:
+        raise Exception("This is a test exception")
+    else:
+        return {"b": "child flow b"}
+
+
+@task
+def child_flow_d():
+    return {"d": "child flow d"}
+
+
+@task
+def child_flow_c():
+    d = "child_flow_d"
+    return {"c": d}
 
 
 class SimulatedFailure(BaseModel):
@@ -57,15 +109,17 @@ default_simulated_failure = SimulatedFailure(
 )
 
 
-# prefect deployment build blocking_subflows.py:blocking_subflows -n dep_blocking -t subflows -t blocking -t parent -a
+# prefect deployment build just_tasks.py:just_tasks -n dep-just-tasks -t subflows -t just-tasks -t parent -a
 @flow(task_runner=ConcurrentTaskRunner(), persist_result=True)
-def blocking_subflows(sim_failure: SimulatedFailure = default_simulated_failure):
+def just_tasks(sim_failure: SimulatedFailure = default_simulated_failure):
     h = upstream_task_h.submit()
     i = upstream_task_i.submit()
     p = downstream_task_p.submit(h)
-    a = child_flow_a(i, sim_failure.child_flow_a)
-    b = child_flow_b(sim_failure_child_flow_b=sim_failure.child_flow_b, wait_for=[i])
-    c = child_flow_c()
+    a = child_flow_a.submit(i, sim_failure.child_flow_a)
+    b = child_flow_b.submit(
+        sim_failure_child_flow_b=sim_failure.child_flow_b, wait_for=[i]
+    )
+    c = child_flow_c.submit()
     j = downstream_task_j.submit(a, c, sim_failure.downstream_task_j)
     k = downstream_task_k.submit(wait_for=[b])
 
@@ -75,7 +129,7 @@ def blocking_subflows(sim_failure: SimulatedFailure = default_simulated_failure)
 # ---
 
 if __name__ == "__main__":
-    blocking_subflows(
+    just_tasks(
         sim_failure=SimulatedFailure(
             child_flow_a=False, child_flow_b=False, downstream_task_j=False
         )
