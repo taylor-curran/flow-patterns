@@ -16,6 +16,12 @@ def upstream_task_i():
 
 
 @task()
+def downstream_task_p(h):
+    print(h)
+    return {"p": "downstream task"}
+
+
+@task()
 def downstream_task_j(a):
     print("downstream task")
     return {"j": "downstream task"}
@@ -55,6 +61,7 @@ default_simulated_failure = SimulatedFailure(
 def normal_subflows_no_tr(sim_failure: SimulatedFailure = default_simulated_failure):
     h = upstream_task_h()
     i = upstream_task_i()
+    p = downstream_task_p(h)
     a = child_flow_a(i, sim_failure.child_flow_a)
     b = child_flow_b(sim_failure_child_flow_b=sim_failure.child_flow_b, wait_for=[i])
     c = child_flow_c()
@@ -69,6 +76,6 @@ def normal_subflows_no_tr(sim_failure: SimulatedFailure = default_simulated_fail
 if __name__ == "__main__":
     normal_subflows_no_tr(
         sim_failure=SimulatedFailure(
-            child_flow_a=False, child_flow_b=False, downstream_task_j=False
+            child_flow_a=True, child_flow_b=False, downstream_task_j=False
         )
     )

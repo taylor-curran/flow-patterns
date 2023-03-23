@@ -1,5 +1,8 @@
 # flow-patterns
 
-TODO: Add sub-sub flows
--- Is this consistent with 2631
----- provide external and internal update
+cd flows/subflows
+python deployments.py
+
+Go into Prefect UI to run flows.
+
+Custom runs allow you to toggle simulated failure on and off:
