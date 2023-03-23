@@ -6,7 +6,7 @@ def task_f():
     print("task f")
     return {"f": "task f"}
 
-# prefect deployment build child_deployments.py:child_flow_a -n dep-child-a -t sub-flows -t child -a
+# prefect deployment build child_flows.py:child_flow_a -n dep-child-a -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_a(i, sim_failure_child_flow_a):
     print(f"i: {i}")
@@ -17,7 +17,7 @@ def child_flow_a(i, sim_failure_child_flow_a):
         return {"a": "child flow a"}
 
 
-# prefect deployment build child_deployments.py:child_flow_b -n dep-child-b -t sub-flows -t child -a
+# prefect deployment build child_flows.py:child_flow_b -n dep-child-b -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_b(i={"i": "upstream task"}, sim_failure_child_flow_b=False):
     print(f"i: {i}")
@@ -27,14 +27,14 @@ def child_flow_b(i={"i": "upstream task"}, sim_failure_child_flow_b=False):
         return {"b": "child flow b"}
 
 
-# prefect deployment build child_deployments.py:child_flow_d -n dep-child-d -t sub-flows -t child -a
+# prefect deployment build child_flows.py:child_flow_d -n dep-child-d -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_d():
     return {"d": "child flow d"}
 
 
 # -- Nested Child Flow --
-# prefect deployment build child_deployments.py:child_flow_c -n dep-child-c -t sub-flows -t child -a
+# prefect deployment build child_flows.py:child_flow_c -n dep-child-c -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_c():
     d = run_deployment("child-flow-d/dep-child-d")
