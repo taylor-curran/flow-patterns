@@ -1,6 +1,4 @@
 from prefect import flow, task
-from datetime import date, timedelta
-from prefect_dask import DaskTaskRunner
 from prefect.deployments import run_deployment
 from prefect.task_runners import ConcurrentTaskRunner
 from pydantic import BaseModel
@@ -63,7 +61,8 @@ async def downstream_task_j(a, c, sim_failure_downstream_task_j):
 
 
 @task()
-def downstream_task_k():
+def downstream_task_k(b='b'):
+    print(b)
     print("downstream task")
     return {"k": "downstream task"}
 
@@ -103,6 +102,6 @@ def task_wrapped_deployments(sim_failure: SimulatedFailure = default_simulated_f
 if __name__ == "__main__":
     task_wrapped_deployments(
         sim_failure=SimulatedFailure(
-            child_flow_a=False, child_flow_b=False, downstream_task_j=False
+            child_flow_a=False, child_flow_b=True, downstream_task_j=False
         )
     )
