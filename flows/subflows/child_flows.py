@@ -1,11 +1,16 @@
-from prefect import flow
+from prefect import flow, task
 from prefect.deployments import run_deployment
 
+@task
+def task_f():
+    print("task f")
+    return {"f": "task f"}
 
 # prefect deployment build child_deployments.py:child_flow_a -n dep-child-a -t sub-flows -t child -a
 @flow(persist_result=True)
 def child_flow_a(i, sim_failure_child_flow_a):
     print(f"i: {i}")
+    task_f()
     if sim_failure_child_flow_a:
         raise Exception("This is a test exception")
     else:
