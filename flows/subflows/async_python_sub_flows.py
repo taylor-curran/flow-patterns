@@ -3,15 +3,18 @@ from prefect.deployments import run_deployment
 from pydantic import BaseModel
 import asyncio
 
+
 @task
 async def task_f():
     print("task f")
     return {"f": "task f"}
 
+
 @task
 async def task_m():
     print("task m")
     return {"m": "task m"}
+
 
 @task
 async def task_n(m):
@@ -19,10 +22,12 @@ async def task_n(m):
     print("task n")
     return {"n": "task n"}
 
+
 @task
 async def task_o():
     print("task o")
     return {"o": "task o"}
+
 
 @flow(persist_result=True)
 async def child_flow_a(i, sim_failure_child_flow_a):
@@ -44,15 +49,15 @@ async def child_flow_b(i={"i": "upstream task"}, sim_failure_child_flow_b=False)
 
 @flow(persist_result=True)
 async def child_flow_d():
-    o = task_o()
+    o = await task_o()
     return {"d": "child flow d"}
 
 
 # -- Nested Child Flow --
 @flow(persist_result=True)
 async def child_flow_c():
-    d = await child_flow_d()
-    m = await task_m()
+    first_round = await asyncio.gather(*[child_flow_d(), task_m()])
+    d, m = first_round
     n = await task_n(m)
     return {"c": d, "n": n}
 
@@ -139,28 +144,3 @@ if __name__ == "__main__":
             )
         )
     )
-
-
-#  if timeout == 0:
-#         return flow_run
-
-#     with anyio.move_on_after(timeout):
-#         while True:
-#             flow_run = await client.read_flow_run(flow_run_id)
-#             flow_state = flow_run.state
-#             if flow_state and flow_state.is_final():
-#                 return flow_run
-#             await anyio.sleep(poll_interval)
-
-
-# In [5]: async def async_fn():
-#    ...:     return 10
-#    ...:
-
-# In [6]: async_fn()
-# Out[6]: <coroutine object async_fn at 0x104ae2ce0>
-
-# In [7]: await async_fn()
-# Out[7]: 10
-
-# In [8]:

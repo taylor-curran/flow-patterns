@@ -1,15 +1,18 @@
 from prefect import flow, task
 from prefect.deployments import run_deployment
 
+
 @task
 def task_f():
     print("task f")
     return {"f": "task f"}
 
+
 @task
 def task_m():
     print("task m")
     return {"m": "task m"}
+
 
 @task
 def task_n(m):
@@ -17,10 +20,12 @@ def task_n(m):
     print("task n")
     return {"n": "task n"}
 
+
 @task
 def task_o():
     print("task o")
     return {"o": "task o"}
+
 
 # prefect deployment build child_flows.py:child_flow_a -n dep-child-a -t sub-flows -t child -a
 @flow(persist_result=True)
