@@ -1,0 +1,4 @@
+{
+  "My Demo Flow": "flows/archive/classic.py:demo_flow",
+  "just-tasks": "flows/subflows/just_tasks.py:just_tasks"
+}
