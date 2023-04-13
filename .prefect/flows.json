@@ -1,4 +1,5 @@
 {
   "My Demo Flow": "flows/archive/classic.py:demo_flow",
+  "async-python-sub-flows": "flows/subflows/async_python_sub_flows.py:async_python_sub_flows",
   "just-tasks": "flows/subflows/just_tasks.py:just_tasks"
 }
