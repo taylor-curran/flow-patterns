@@ -1,6 +1,6 @@
 from re import L
 from prefect import task, flow
-from prefect.orion.schemas.states import Completed, Failed
+from prefect.server.schemas.states import Completed, Failed
 from prefect.blocks.notifications import SlackWebhook
 from prefect_aws.s3 import S3Bucket
 from prefect.tasks import task_input_hash
