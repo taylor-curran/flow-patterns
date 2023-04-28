@@ -74,7 +74,6 @@ def looping_task():
 
 @task(name="Task with Tag", tags=["Specific_Tag"])
 def task_with_tag():
-
     """A task that is called by virtue of its tag."""
     print("This is a task with a Specific Tag")
 
@@ -92,11 +91,10 @@ def sub_flow():
 
 @flow(
     name="My Demo Flow",
-    persist_result=True, # Default is True
+    persist_result=True,  # Default is True
     result_storage=S3Bucket.load("result-storage"),
 )
 def demo_flow(desired_outcome: str = "Fail"):
-
     ast = always_succeeds_task.submit()
 
     inner_loop_dep = depends_on_ast.submit(ast)
@@ -105,7 +103,6 @@ def demo_flow(desired_outcome: str = "Fail"):
 
     if ast.get_state().type == "COMPLETED":
         sub_flow()
-        run_deployment('subflow/docker_deployment')
 
     often_fails_task.submit()
 
@@ -139,5 +136,4 @@ def demo_flow(desired_outcome: str = "Fail"):
 
 
 if __name__ == "__main__":
-
     run = demo_flow("Success")
