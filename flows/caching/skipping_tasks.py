@@ -1,157 +1,189 @@
-# @task
-# def my_task():
-#     print('my task')
-
-# @flow
-# def my_flow(skip: list):
-#     if 'task_a' in skip:
-#         pass
-#     else:
-#         task_a.submit()
+from typing import List
+from prefect import Flow, Task, flow
+from prefect.states import Completed
+import functools
 
 
-# ---
-
-from prefect import flow, task
-from prefect.task_runners import ConcurrentTaskRunner
-from child_flows import child_flow_a, child_flow_b, child_flow_c
-from pydantic import BaseModel
+## -------------------------------------------------------------------------------------
+# Avoid submission of tasks passing skip_tasks around
 
 
-@task()
-def upstream_task_h():
-    print("upstream task")
-    return {"h": "upstream task"}
-
-
-@task()
-def upstream_task_i():
-    print("upstream task")
-    return {"i": "upstream task"}
-
-
-@task()
-def downstream_task_p(h):
-    print(h)
-    return {"p": "downstream task"}
-
-
-@task()
-def downstream_task_j(a):
-    print("downstream task")
-    return {"j": "downstream task"}
-
-
-@task()
-async def downstream_task_j(a, c, sim_failure_downstream_task_j):
-    if sim_failure_downstream_task_j:
-        raise Exception("This is a test exception")
+def task(__fn=None, **kwargs):
+    if __fn:
+        return CustomTask(fn=__fn, **kwargs)
     else:
-        print("downstream task")
-        return {"j": "downstream task"}
+        return functools.partial(task, **kwargs)
 
 
-@task()
-def downstream_task_k():
-    print("downstream task")
-    return {"k": "downstream task"}
-
-
-@task
-def task_f():
-    print("task f")
-    return {"f": "task f"}
+class CustomTask(Task):
+    def submit(self, *args, **kwargs):
+        skip_tasks = kwargs.pop("skip_tasks", [])
+        if self.name in skip_tasks:
+            return None
+        return super().submit(*args, **kwargs)
 
 
 @task
-def task_m():
-    print("task m")
-    return {"m": "task m"}
+def foo():
+    print("foo")
 
 
 @task
-def task_n(m):
-    print(m)
-    print("task n")
-    return {"n": "task n"}
+def bar():
+    print("bar")
 
 
-@task
-def task_o():
-    print("task o")
-    return {"o": "task o"}
+@flow
+def my_flow_from_direct(skip_tasks: List[str] = []):
+    foo.submit(skip_tasks=skip_tasks)
+    bar.submit(skip_tasks=skip_tasks)
 
 
-# --
-@task
-def child_flow_a(i, sim_failure_child_flow_a):
-    print(f"i: {i}")
-    if sim_failure_child_flow_a:
-        raise Exception("This is a test exception")
+my_flow_from_direct(skip_tasks=["foo"])
+
+
+## -------------------------------------------------------------------------------------
+# Avoid submission of tasks by using context variable
+
+from contextvars import ContextVar
+
+
+_SKIP_TASKS = ContextVar("skip_tasks", default=[])
+
+
+def task(__fn=None, **kwargs):
+    if __fn:
+        return CustomTask(fn=__fn, **kwargs)
     else:
-        return {"a": "child flow a"}
+        return functools.partial(task, **kwargs)
 
 
-@task
-def child_flow_b(i={"i": "upstream task"}, sim_failure_child_flow_b=False):
-    print(f"i: {i}")
-    if sim_failure_child_flow_b:
-        raise Exception("This is a test exception")
+class CustomTask(Task):
+    # To take action before a task is submitted / a task run is created then override
+    # a function in the task class itself
+    def submit(self, *args, **kwargs):
+        skip_tasks = kwargs.pop("skip_tasks", [])
+        if self.name in skip_tasks:
+            return None
+        return super().submit(*args, **kwargs)
+
+
+class CustomFlow(Flow):
+    def __call__(self, *args, **kwargs):
+        skip_tasks = kwargs.pop("skip_tasks", [])
+
+        token = _SKIP_TASKS.set(skip_tasks)
+        try:
+            retval = super().__call__(*args, **kwargs)
+        finally:
+            _SKIP_TASKS.reset(token)
+
+        return retval
+
+
+def flow(__fn=None, **kwargs):
+    if __fn:
+        return CustomFlow(fn=__fn, **kwargs)
     else:
-        return {"b": "child flow b"}
+        return functools.partial(flow, **kwargs)
 
 
-@task
-def child_flow_d():
-    return {"d": "child flow d"}
+@flow
+def my_flow_from_context():
+    # Uses context variable for skip tasks instead
+    foo.submit()
+    bar.submit()
 
 
-@task
-def child_flow_c():
-    d = "child_flow_d"
-    return {"c": d}
+my_flow_from_context(skip_tasks=["foo"])
 
 
-class SimulatedFailure(BaseModel):
-    child_flow_a: bool = False
-    child_flow_b: bool = False
-    downstream_task_j: bool = False
+## -------------------------------------------------------------------------------------
+# Create a task run then mark as SKIPPED using context variable
 
 
-default_simulated_failure = SimulatedFailure(
-    child_flow_a=False, child_flow_b=False, downstream_task_j=False
-)
-
-
-# prefect deployment build just_tasks.py:just_tasks -n dep-just-tasks -t subflows -t just-tasks -t parent -a
-@flow(task_runner=ConcurrentTaskRunner(), persist_result=True)
-def just_tasks(
-    sim_failure: SimulatedFailure = default_simulated_failure,
-    skip_tasks: list = []
-    ):
-    h = upstream_task_h.submit()
-    i = upstream_task_i.submit()
-    p = downstream_task_p.submit(h)
-    a = child_flow_a.submit(i, sim_failure.child_flow_a)
-    if 'child_flow_b' in skip_tasks:
-        b = None
+def task(__fn=None, **kwargs):
+    if __fn:
+        return CustomTask(fn=my_task_wrapper(__fn), **kwargs)
     else:
-        b = child_flow_b.submit(
-            sim_failure_child_flow_b=sim_failure.child_flow_b, wait_for=[i]
-        )
-    c = child_flow_c.submit()
-    j = downstream_task_j.submit(a, c, sim_failure.downstream_task_j)
-    k = downstream_task_k.submit(wait_for=[b])
-
-    return {"j": j, "k": k}
+        return functools.partial(task, **kwargs)
 
 
-# ---
+def my_task_wrapper(fn):
+    # To override behavior _after_ a task run is created but before it is executed,
+    # implement a wrapper function that goes around all of your task functions
+    # See L107 for example of adding wrapper to all tasks
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        skip_tasks = kwargs.pop("skip_tasks", _SKIP_TASKS.get())
+        if fn.__name__ in skip_tasks:
+            return Completed(name="Skipped")
+        return fn(*args, **kwargs)
 
-if __name__ == "__main__":
-    just_tasks(
-        sim_failure=SimulatedFailure(
-            child_flow_a=False, child_flow_b=False, downstream_task_j=False
-        ),
-        skip_tasks=['child_flow_b']
-    )
+    return wrapper
+
+
+@task
+def foo_wrapped():
+    print("foo")
+
+
+@task
+def bar_wrapped():
+    print("bar")
+
+
+@flow
+def my_flow_return_skipped():
+    foo_wrapped.submit()
+    foo_wrapped()
+    bar_wrapped.submit()
+    bar_wrapped()
+
+
+my_flow_return_skipped(skip_tasks=["foo_wrapped"])
+
+
+## -------------------------------------------------------------------------------------
+# Create a task run then mark as SKIPPED and mark downstreams as skipped
+
+
+class SKIPPED:
+    pass
+
+
+def task(__fn=None, **kwargs):
+    if __fn:
+        return CustomTask(fn=my_task_wrapper(__fn), **kwargs)
+    else:
+        return functools.partial(task, **kwargs)
+
+
+def my_task_wrapper(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        skip_tasks = kwargs.pop("skip_tasks", _SKIP_TASKS.get())
+        if fn.__name__ in skip_tasks or SKIPPED in args or SKIPPED in kwargs.values():
+            return Completed(name="Skipped", data=SKIPPED)
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+@task
+def foo_wrapped():
+    print("foo")
+
+
+@task
+def bar_wrapped(x):
+    print("bar")
+
+
+@flow
+def my_flow_return_skipped_with_downstream():
+    upstream = foo_wrapped()
+    bar_wrapped(upstream)
+
+
+my_flow_return_skipped_with_downstream(skip_tasks=["foo_wrapped"])
