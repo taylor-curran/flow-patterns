@@ -23,9 +23,6 @@ class CustomTask(Task):
         return super().submit(*args, **kwargs)
 
 
-
-
-
 ## -------------------------------------------------------------------------------------
 # Avoid submission of tasks by using context variable
 
@@ -54,6 +51,7 @@ class CustomTask(Task):
 
 ## here?
 
+
 class CustomFlow(Flow):
     def __call__(self, *args, **kwargs):
         skip_tasks = kwargs.pop("skip_tasks", [])
@@ -74,11 +72,8 @@ def flow(__fn=None, **kwargs):
         return functools.partial(flow, **kwargs)
 
 
-
 ## -------------------------------------------------------------------------------------
 # Create a task run then mark as SKIPPED using context variable
-
-
 
 
 ###
@@ -107,9 +102,11 @@ def my_task_wrapper(fn):
 
     return wrapper
 
+
 @task
 def not_skipped():
     print("not_skipped")
+
 
 @task
 def foo_wrapped():
